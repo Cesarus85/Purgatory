@@ -1,0 +1,80 @@
+#pragma kernel Discover
+#pragma kernel Integrate
+
+// SDK depth is normalized [0,1], with an OpenGL-style NDC [-1,1]
+// reprojection supplied by Meta, independent of Unity's reversed-Z renderer.
+Texture2DArray<float> _Depth;
+float4x4 _WorldToDepth, _DepthToWorld, _MapToWorld;
+float4 _ZParams, _Head, _ChunkOrigin;
+int _Width, _Height;
+float _Voxel, _Band;
+RWStructuredBuffer<float4> _Points;
+RWStructuredBuffer<float2> _Field;
+RWStructuredBuffer<uint> _CarveEvidence;
+
+float Linear(float d) { return _ZParams.x / (d * 2 - 1 + _ZParams.y); }
+bool Valid(float d) { return d > 0.000001 && d < .999999; }
+
+
+[numthreads(8,8,1)]
+void Discover(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= 48 || id.y >= 48) return;
+    uint index = id.x + 48 * id.y;
+    float2 uv = (float2(id.xy)+.5)/48;
+    int2 pixel = min(int2(uv * float2(_Width,_Height)),int2(_Width-1,_Height-1));
+    uv = (float2(pixel)+.5)/float2(_Width,_Height);
+    float d = _Depth.Load(int4(pixel,0,0));
+    _Points[index] = 0;
+    if (!Valid(d)) return;
+    float4 p = mul(_DepthToWorld,float4(uv*2-1,d*2-1,1));
+    if (abs(p.w) < 1e-6) return;
+    float3 world = p.xyz/p.w;
+    float range = distance(world,_Head.xyz);
+    if (range < .35 || range > 6) return;
+    _Points[index] = float4(world,1);
+}
+
+[numthreads(8,8,8)]
+void Integrate(uint3 id : SV_DispatchThreadID)
+{
+    if (any(id >= 17)) return;
+    float3 world = mul(_MapToWorld,float4(_ChunkOrigin.xyz + float3(id) * _Voxel,1)).xyz;
+    // Avoid integrating the wearer's head/body as persistent furniture.
+    if (distance(world.xz,_Head.xz) < .28 && world.y > _Head.y-1.25 && world.y < _Head.y+.25) return;
+    float4 clip = mul(_WorldToDepth,float4(world,1));
+    if (clip.w <= .2) return;
+    float2 uv = (clip.xy/clip.w+1)*.5;
+    if (any(uv < .015) || any(uv > .985)) return;
+    int2 pixel = int2(uv * float2(_Width,_Height));
+    float d = _Depth.Load(int4(pixel,0,0));
+    if (!Valid(d)) return;
+    float measured = Linear(d);
+    float voxelDepth = _ZParams.x/(clip.z/clip.w+_ZParams.y);
+    if (measured < .25 || measured > 6 || voxelDepth < .25) return;
+    float sdf = measured-voxelDepth;
+    if (sdf < -_Band) return; // behind observed surface: not evidence
+    // Reject mixed foreground/background pixels near depth discontinuities.
+    if (abs(sdf) < _Band)
+    {
+        float a = _Depth.Load(int4(pixel+int2(1,0),0,0));
+        float b = _Depth.Load(int4(pixel+int2(0,1),0,0));
+        if (!Valid(a) || !Valid(b) || abs(Linear(a)-measured) > .12 || abs(Linear(b)-measured) > .12) return;
+    }
+    uint index = id.x + 17*(id.y+17*id.z);
+    float2 old = _Field[index];
+    float value=clamp(sdf,-_Band,_Band);
+    // A single background/depth-edge outlier must not punch through a measured
+    // surface. Persistent removal remains possible after three valid observations.
+    bool removing=old.y>=2 && old.x<.06 && value-old.x>.10;
+    uint evidence=removing?min(3u,_CarveEvidence[index]+1u):0u;
+    float2 fused=old;
+    if(old.y < 0)
+        fused=float2(value,abs(old.x-value)<.06?2:1);
+    else if(!removing || evidence>=3u)
+    {float w=min(old.y,5);fused=float2((old.x*w+value)/(w+1),w+1);}
+    // Keep both writes on a common exit. GPU parity tests cover the deferred
+    // field update as well as persistence of its removal-evidence counter.
+    _CarveEvidence[index]=evidence;
+    _Field[index]=fused;
+}

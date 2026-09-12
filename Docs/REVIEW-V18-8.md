@@ -1,0 +1,22 @@
+# V18.8 – A6 Gegnerklang, lautere Mischung und vorwärts aus dem Portal
+
+## Umsetzung
+
+- Revolverschuss von 0,62 auf **0,95 Gain** angehoben (rund +3,7 dB vor Summenbegrenzung), eigene Schüsse nicht mehr durch den Handabstand abgeschwächt. Die positiv bewerteten A5-Aufnahmen und ihre Klangbearbeitung bleiben unverändert. Mechanik 0,12 → **0,24** (+6 dB), mit schwächerer Entfernungsabsenkung.
+- Neuester Treffer **0,62 Gain**, ältere gleichzeitig klingende Treffer teilen 0,12. Zuvor teilten alle Treffer zusammen nur 0,25. Voll räumlich, aber erst ab 2,2 statt 0,8 Metern logarithmisch abgeschwächt. Der Vergleich in dB ist keine Messung des wahrgenommenen Quest-Schalldrucks.
+- Stereo-gekoppelter Ausgangslimiter am aktiven AudioListener: 0,94 Spitzenobergrenze, sofortiger Eingriff und circa 80-ms-Erholung, keine Lookahead-Latenz, keine Unity-Aufrufe oder Speicherallokationen im Audio-Callback. Leise Signale bleiben unverändert. DSP-Tests ersetzen keine Messung der Quest-Lautsprecher oder des tatsächlich ausgegebenen Hardware-Mixes.
+- **54 neue vorbereitete Mono-PCM-Clips**: drei Varianten pro Grollen, Angriff, Trefferreaktion und Tod für jeden der vier Archetypen; zusätzlich drei Schritte und drei Flügelschläge. Unterschiedlich bearbeitete gemeinsame CC0-Aufnahmen, keine Behauptung vier unabhängiger Creature-Recording-Packs. [Quellen und Verarbeitung](../ExternalSource/EnemyAudioV18/SOURCE.md).
+- Grollen in gestaffelten Abständen, keine Dauerschleifen. Nahkampf-, Wurf- und Sturzflugwarnungen starten mit der jeweiligen Vorbereitung. Treffer unterbrechen das Angriffsaudio; Tod stoppt zuerst die bisherigen Stimmen und lässt nur den expliziten Todeslaut zu. Despawn/Reset stoppt auch dessen Ausklang.
+- Schritte hängen an angehobenen und wieder abgesenkten animierten Füßen, zusätzlich ist echte horizontale Gehbewegung erforderlich. Schwelle skaliert mit dem jeweiligen Modell. Keine Schritte im Stillstand, bei Recovery-Sprüngen, Angriff, Pause oder Tod. Dies verbessert den Klang, ersetzt aber **nicht** die noch für A7 geplante Gang-/Geschwindigkeitsüberarbeitung.
+- Kurze Flügelschläge mit Luftanteil einmal je sichtbarem Fly-Zyklus; kein permanenter Windgenerator. Der Angriffsschrei übernimmt während der U-Attacke. Tote Fledermäuse schlagen akustisch nicht weiter mit den Flügeln.
+- Global **acht** wiederverwendete 3D-Gegnerstimmen; pro Gegner getrennte Sprach-/Bewegungskanäle. Warnungen können Grollen oder Foley verdrängen, nicht umgekehrt. Kein Doppler; abgestufte Entfernungskurve. Pause friert Stimmen und mit der Spielzeit geführte Laufzeiten ein. Keine laufende Sample-Synthese und keine neue AudioSource pro Schritt.
+
+## Zusätzlicher Nutzerfehler: rückwärts aus dem Portal
+
+Der produktive Bodenspawn setzte nur die Position, nicht die Rotation. Damit begann `Emerge` in Welt-Standardrichtung; eine spätere Navigationsdrehung kam zu spät. Jetzt wird der Bodendämon **vor Initialize/Emerge zur raumseitigen Portalnormalen ausgerichtet**. Deckeneintritte richten sich horizontal zum Spieler aus, mit endlichen Fallbacks für senkrechte/koinzidente Ziele. Keine pauschale 180°-Drehung des Modells, die anschließend Laufen, Angriffe oder Fledermaus-Rig umkehren würde.
+
+## Verifikation / Abnahme
+
+**748 native Prüfungen bestanden**, 564 Regressionen plus 184 A6-Prüfungen; signierte Release-APK gebaut und auf Quest installiert. Lieferdaten im [Buildbericht](BUILD-REPORT.md). Zusätzlich zu bisherigen Regressionen: Audioformat/Peaks/DC, Wiederholungsvermeidung, begrenzte Stimmen und Prioritäten, Tod/Reset/Pause, DSP-Überlastung und Stereoverhältnis, Portalausrichtung in acht Richtungen, importierte Gesichtsausrichtung während Emerge und tatsächliche Fußkontakte in allen drei Bodengrößen. Schritte reagieren nur auf den vorwärts gerichteten Auftritt, nicht zusätzlich auf die Rückschwingphase. Räumlichkeit nutzt Unity-3D-Panning/Entfernung, kein neu eingebautes HRTF- oder akustisches Raum-Materialsystem.
+
+**Offen auf der getragenen Quest:** Lautstärkevergleich bei gleicher Systemlautstärke, Warnungsortung bei mehreren Gegnern, Klangbalance von Schritten/Flügeln und optische Austritte an verschiedenen Wänden. Keine neue Langzeit-, Thermik- oder Stereo-Abnahme. Raumscan, Portalwelt, Navigation, Schaden, Munition und die bereits in A5 angepasste Revolvergröße bleiben unverändert. **A7 Dynamik/Integration ist der nächste Planpunkt**, nicht Teil dieser Lieferung.

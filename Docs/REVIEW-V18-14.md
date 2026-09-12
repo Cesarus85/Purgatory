@@ -1,0 +1,24 @@
+# A9 / V18.14 – Relikte und Aufnahmeeffekte
+
+Stand: 6. September 2026. **V18.14 / 0.18.14 / Code 32 implementiert, nativ geprüft und auf Quest 3 installiert.** APK-Metadaten, Signatur und Gerätehash bestätigt; Daten/Berechtigungen erhalten, nicht automatisch gestartet. [Build- und Gerätenachweis](BUILD-REPORT.md).
+
+## Änderung
+
+- Zwei originale Blender-Modelle statt desselben umgefärbten Kristalls: sechs Patronen in einer offenen Metallfassung sowie ein organisches, von Knochenklauen gehaltenes Lebensgefäß. Eigene Silhouetten und eingelegte Zeichen; gemeinsame gebackene 1024²-Albedotextur, maximal vier Materialien je Modell. Editierbare Quelle und reproduzierbares Skript in `BlenderSource/`.
+- Munition: kleine dreidimensionale glühende Metallsplitter mit Abklingen. Leben: gekrümmte, nach innen steigende Seelenpartikel. Keine gestreckten blauen Quad-Strahlen. Vier vorgewärmte wiederverwendbare Stimmen, je 18 Meshpartikel und eine Audioquelle; tatsächlicher Bonus als kurze zweizeilige Anzeige.
+- Metallischer Aufnahmeton aus der vorhandenen lizenzierten Mechanikbank; eigener deterministisch erzeugter kurzer Lebens-Siegelton. Unterschiedliche rechte Controllerimpulse. Die abgenommene Revolver-/Treffermischung und die Waffengröße bleiben unverändert.
+- Tatsächliche Änderung statt pauschalem Versprechen: Leben bei 90 ergibt +10, bei 100 bleibt das Relikt verfügbar und meldet VOLL. Ebenso nur die tatsächlich freien Plätze im Munitionsvorrat. Die bestehenden Grenzen bleiben 100 Leben und 96 Reservepatronen, reguläre Grants maximal +25/+10.
+- Direkter Trigger auf ein sichtbares Relikt vor Nachladen/Trockenfeuer: keine Patrone nötig, kein normaler Schuss, kein falsches Einschussloch. Ein normaler Streuschuss, dessen eigentlicher Zielstrahl am Relikt vorbeiging, bleibt ein echter verbrauchter Schuss; bei zufälligem Relikttreffer ebenfalls kein Oberflächen-Einschussloch.
+- Freie Sicht erlaubt Aufnahme, in Live-Scan-Modus zusätzlich bekannte Freiraumdaten (vorhandene Ausnahme am getrackten Körper bleibt). Anziehung prüft das bewegte Volumen und den gesamten Weg gegen die rekonstruierte Raumgeometrie, einschließlich konservativer 30 × 33 × 30-cm-Box um die komplette sichtbare Relikthülle. Eine eigene Prüfung fängt auch niedrige Möbelkanten unterhalb der Mittelpunktkugel ab. Nahe Aufnahme und Fernaufnahme bleiben möglich, auch bei Relikten auf Möbeln. Anziehung hält die Auflagehöhe, statt durch die Sofakissen abzusinken.
+- Drops suchen eine tatsächlich beobachtete Auflagefläche unter dem getöteten Gegner. Ohne sichere Auflage wird nicht blind im Boden/Möbel gespawnt; die Munitions-Pity-Zählung bleibt dann bestehen. Keine Änderung der normalen Drop-Wahrscheinlichkeiten, Mengen, Lebensdauer von 14 Spielsekunden oder Einführung neuer Buffs.
+- Wirkung genau einmal pro Relikt. Pause stoppt Aufnahme und leert kurzlebige Effekt-/Audiostimmen; die nicht aufgenommenen Relikte bleiben erhalten. Rundenreset entfernt Pickups und Aufnahmeeffekte.
+
+## Prüfung und Grenzen
+
+Die vollständige native Prüfkette besteht mit **1.217 CHECK-Meldungen**: vorherige 1.155, drei zusätzliche Warmup-Ressourcen und **59 A9-Prüfungen**. Dazu gehören tatsächlicher Triggerpfad bei leerem Revolver/während Nachladen, Teilmengen bei fast vollen Ressourcen, Einmaligkeit, Sofadrops, niedrige Möbelkanten, unbekannte Samples trotz Ready-Flag, Effekt-/Audiocleanup und der Erhalt der importierten FBX-Achsenausrichtung unter der laufenden Drehung. Die Visuals drehen deshalb auf einem separaten Pivot; die Achsenkonvertierung des importierten Modells wird nicht überschrieben.
+
+Finale Blender-Neutralansicht sowie native Unity-Nah-/Raumansicht und Aufnahmeeffekte unter `Verification/Relics/` angesehen. Effekte erzeugen nachweislich jeweils 18 Meshpartikel, keine bloße leere Effektinstanz. Zwei Zwischen-APKs und die dazugehörigen Export-/Buildprotokolle sind dort archiviert und wurden nicht installiert: vor Art-/Achsenpolitur sowie vor dem vollständigen Volumentest. Der [Testplan](A9-TEST-PLAN.md) trennt synthetische Collider-/Tiefenkartenprüfungen von der getragenen Quest-Abnahme. Importierte Geometrie und Unity-Vorschauen sind kein Beweis des Headsetbilds.
+
+Luna Max übernahm die abgegrenzte Blender-Assetarbeit, Testgrundlage und anschließende Codeprüfung. Hauptagent integrierte, korrigierte Testaufbauten, FBX-Pivot, Partikelmaterial, tatsächlichen Triggerpfad und vollständige Volumenabsicherung und führte native QA und Auslieferung aus. Keine gemessene Gesamt-Tokenersparnis behauptet.
+
+Offen bleiben eine kurze getragene Sicht-/Hör-/Haptikprüfung und Aufnahme neben realen Möbeln, mit voller Lebensanzeige und leerem Revolver. Live-Scan-Architektur, Portalorte und rückwärtige Bodenportalverteilung sind in A9 nicht verändert. Nächster Block: A10, zunächst ein Portal-Schauplatz als Qualitätsreferenz.

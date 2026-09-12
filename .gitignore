@@ -1,0 +1,26 @@
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Vv]erification/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+MemoryCaptures/
+Recordings/
+.DS_Store
+*.csproj
+*.sln
+*.user
+*.pidb
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+__pycache__/
+*.py[cod]
+
+# Source archives and raw third-party libraries are retained locally as
+# provenance only. The imported, runtime-ready assets live under Assets/ and
+# are tracked with the project; notices and licenses are tracked separately.
+ExternalSource/

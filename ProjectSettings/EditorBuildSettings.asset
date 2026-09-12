@@ -1,0 +1,15 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/QuestDemonMR/Scenes/Main.unity
+    guid: e4a5a37adfa964a64ae4832e034f8a86
+  m_configObjects:
+    com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 67f7cb184a8ab4f80bbf12ae75551a0e, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 3fb7ceea81c8c489b9c6078687cdbf4c, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 1d87c5d12387748a1857fc1a64b7452d, type: 2}
+  m_UseUCBPForAssetBundles: 0
